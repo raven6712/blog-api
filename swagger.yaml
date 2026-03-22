@@ -1,0 +1,247 @@
+openapi: 3.0.0
+info:
+  title: Blog API - INF222 TAF1
+  description: API Backend pour la gestion d'un blog simple (CRUD articles)
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Serveur local
+
+tags:
+  - name: Articles
+    description: Gestion des articles du blog
+
+paths:
+  /api/articles:
+    get:
+      tags: [Articles]
+      summary: Récupérer tous les articles
+      description: Retourne la liste complète ou filtrée par catégorie, auteur ou date
+      parameters:
+        - in: query
+          name: categorie
+          schema:
+            type: string
+          description: Filtrer par catégorie
+        - in: query
+          name: auteur
+          schema:
+            type: string
+          description: Filtrer par auteur
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Filtrer par date (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Liste des articles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  articles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+        '500':
+          description: Erreur serveur
+
+    post:
+      tags: [Articles]
+      summary: Créer un nouvel article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '201':
+          description: Article créé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  article:
+                    $ref: '#/components/schemas/Article'
+        '400':
+          description: Données invalides
+        '500':
+          description: Erreur serveur
+
+  /api/articles/search:
+    get:
+      tags: [Articles]
+      summary: Rechercher des articles
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+          description: Texte à rechercher
+      responses:
+        '200':
+          description: Articles correspondant à la recherche
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  articles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+        '400':
+          description: Paramètre query manquant
+        '500':
+          description: Erreur serveur
+
+  /api/articles/{id}:
+    get:
+      tags: [Articles]
+      summary: Récupérer un article par ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Article trouvé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  article:
+                    $ref: '#/components/schemas/Article'
+        '404':
+          description: Article non trouvé
+        '500':
+          description: Erreur serveur
+
+    put:
+      tags: [Articles]
+      summary: Modifier un article
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleUpdate'
+      responses:
+        '200':
+          description: Article mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  article:
+                    $ref: '#/components/schemas/Article'
+        '404':
+          description: Article non trouvé
+        '500':
+          description: Erreur serveur
+
+    delete:
+      tags: [Articles]
+      summary: Supprimer un article
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Article supprimé avec succès
+        '404':
+          description: Article non trouvé
+        '500':
+          description: Erreur serveur
+
+components:
+  schemas:
+    Article:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        titre:
+          type: string
+          example: "Introduction au Web"
+        contenu:
+          type: string
+          example: "Le développement web consiste à..."
+        auteur:
+          type: string
+          example: "Alice"
+        date:
+          type: string
+          format: date
+          example: "2026-03-21"
+        categorie:
+          type: string
+          example: "Technologie"
+        tags:
+          type: string
+          example: '["web", "html", "css"]'
+
+    ArticleInput:
+      type: object
+      required: [titre, contenu, auteur, categorie]
+      properties:
+        titre:
+          type: string
+          example: "Introduction au Web"
+        contenu:
+          type: string
+          example: "Le développement web consiste à..."
+        auteur:
+          type: string
+          example: "Alice"
+        date:
+          type: string
+          format: date
+          example: "2026-03-21"
+        categorie:
+          type: string
+          example: "Technologie"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["web", "html"]
+
+    ArticleUpdate:
+      type: object
+      properties:
+        titre:
+          type: string
+        contenu:
+          type: string
+        categorie:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
